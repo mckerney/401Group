@@ -1,4 +1,5 @@
-
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -7,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -16,9 +18,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 
 /* Jim, Alek, Drew, Charles
  * CISP 401 Group Project
@@ -28,14 +34,17 @@ public class MP3Player extends Application {
     //Setting up media player for use in control class
     private MediaPlayer mediaPlayer;
     private MP3Player.Control control;
-    private static final String MEDIA_URL = "file:/C:/Users/Jim/OneDrive/Documents/NetBeansProjects/401GroupMediaPlayer/src/SampleVideo_720x480_5mb.mp4";
+    private static String MEDIA_URL = "file:/D:/CISP401/Group401Project/src/SampVid480.mp4";
+    static int rCount = 0;
+    static int lCount = 0;
     
-    private void initialize(Stage primaryStage){
+    public void initialize(Stage primaryStage){
         //setting up a group for the display
         //Then Sending it to a scene for the stage
         Group group = new Group();
         primaryStage.setScene(new Scene(group));
-        primaryStage.setTitle("Group 3 MP3 and MP4 Player");                
+        primaryStage.setTitle("Group 3 MP3 and MP4 Player"); 
+
         
         //The following call will start the media player off by adding a file URL
         //into the Media() call, this could be an onAction for the file button maybe
@@ -70,6 +79,8 @@ public class MP3Player extends Application {
         //Setting button images for use in creation
         private Image btPlayImage = new Image(MP3Player.class.getResourceAsStream("Play_30x30.png"));
         ImageView ivPlay = new ImageView(btPlayImage);
+        private Image btPauseImage = new Image(MP3Player.class.getResourceAsStream("Pause.png"));
+        ImageView ivPause = new ImageView(btPauseImage);
         
         //methods for laying out elements based on whether or not media is playing
         //we need to resize the placement dynamically based on media size
@@ -133,21 +144,81 @@ public class MP3Player extends Application {
             BorderPane.setAlignment(controlBar, Pos.CENTER);
             */
             
-            //Button setup
+            DropShadow shadow = new DropShadow();            
+            
             Button btPlay = new Button();
             btPlay.setGraphic(ivPlay);
-            //btPlay.setOnAction();
+            btPlay.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e) {
+                    Status status = mediaPlayer.getStatus();
+                    
+                    if (status == Status.UNKNOWN || status == Status.HALTED) {
+                    return;
+                    }
+                    if (status == Status.PAUSED || status == Status.STOPPED || status == Status.READY) {                        
+                        mp.play();
+                        btPlay.setGraphic(ivPause);
+                    }
+                    if (status == Status.PLAYING) {
+                        mp.pause();
+                        btPlay.setGraphic(ivPlay);
+                    }                    
+                }
+            });
             
             Button btLoop = new Button("Loop");
-            //btLoop.setOnAction();
-            // this and repeat will likely need listeners for end of file
+            btLoop.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e) {
+                    switch(lCount) {
+                        case 0:
+                            lCount = 1;
+                            btLoop.setEffect(shadow);
+                        break;
+                        case 1:
+                            lCount = 0;
+                            btLoop.setEffect(null);
+                        break;                    
+                        }                     
+                }
+            });
             
-            Button btRepeat = new Button("Repeat");
-            //btRepeat.setOnAction();
-            //this and loop will likely need listeners for end of file
+            Button btRepeat = new Button("Repeat");            
+            btRepeat.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e) {
+                    
+                switch(rCount) {
+                    case 0:
+                        rCount = 1;
+                        btRepeat.setEffect(shadow);
+                    break;
+                    case 1:
+                        rCount = 0;
+                        btRepeat.setEffect(null);
+                    break;                    
+                    }                   
+                }                
+            });
             
             Button btFile = new Button("File");
-            //btFile.setOnAction();
+            btFile.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e){
+                    
+                    try {
+                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                    } catch (Exception ex) { System.err.println("Error"); }
+                    
+                    JFileChooser chooser = new JFileChooser("D:\\CISP401\\Group401Project\\src");
+        
+                    int returnVal = chooser.showOpenDialog(null);        
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        MEDIA_URL = chooser.getSelectedFile().toString();                        
+                        System.out.println(MEDIA_URL);            
+        }        
+    }
+});
+                
+          
+            
             /*
             controlBar.getChildren().add(btFile);
             controlBar.getChildren().add(btLoop);
@@ -218,10 +289,8 @@ public class MP3Player extends Application {
             setBottom(controlGrid);
             
             
-        }
-    
-        
-    }
+        }  
+    }    
     
     public void start(Stage primaryStage){
         initialize(primaryStage); // the method for setting the stage
