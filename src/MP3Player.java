@@ -31,7 +31,9 @@ import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.effect.DropShadow;
 import javafx.event.EventHandler;
 import javafx.event.ActionEvent;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.layout.ColumnConstraints;
+import javax.swing.BorderFactory;
  
 
 /* Jim, Alek, Drew, Charles
@@ -66,9 +68,7 @@ public class MP3Player extends Application {
         control.setMinSize(600, 560);       //min size for formating
         control.setPrefSize(600, 560);      //should help us with resizing based on media dimensions
         control.setMaxSize(600, 560);
-        group.getChildren().add(control);
-        
-        
+        group.getChildren().add(control);       
     }
     
     //potential for methods that handle checks for button actions to trim down
@@ -93,6 +93,8 @@ public class MP3Player extends Application {
         ImageView ivPlay = new ImageView(btPlayImage);
         private Image btPauseImage = new Image(MP3Player.class.getResourceAsStream("Pause_30x30.png"));
         ImageView ivPause = new ImageView(btPauseImage);
+        private Image btFileImage = new Image(MP3Player.class.getResourceAsStream("File_30x30.PNG"));
+        ImageView ivFile = new ImageView(btFileImage);
         
         //methods for laying out elements based on whether or not media is playing
         //we need to resize the placement dynamically based on media size
@@ -188,7 +190,11 @@ public class MP3Player extends Application {
                 }
             });
             
-            DropShadow shadow = new DropShadow(); 
+            InnerShadow shadow = new InnerShadow();
+            shadow.setColor(Color.GREEN);
+            shadow.setChoke(1.0);
+            shadow.setRadius(3.0);
+            
             Button btLoop = new Button("Loop");
             btLoop.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -232,7 +238,8 @@ public class MP3Player extends Application {
                 }
             });         
             
-            Button btFile = new Button("File");
+            Button btFile = new Button();
+            btFile.setGraphic(ivFile);
             btFile.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e){
