@@ -52,7 +52,7 @@ public class MP3Player extends Application {
         //Then Sending it to a scene for the stage
         Group group = new Group();
         Scene scene = new Scene(group);
-        scene.getStylesheets().add("file:/C:/Users/Jim/OneDrive/Documents/NetBeansProjects/401GroupMediaPlayer/MPStyle.css");
+        scene.getStylesheets().add("MPStyle.css");
    
         primaryStage.setScene(scene);
         primaryStage.setTitle("Group 3 MP3 and MP4 Player");                
