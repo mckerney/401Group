@@ -1,0 +1,20 @@
+
+/* 
+    Created on : Apr 27, 2018, 2:56:27 PM
+    Author     : Jim McKerney
+*/
+
+.root{
+    -fx-background-color: #373b41;
+}
+.label{
+    -fx-text-fill: #ffffff;
+}
+.button{
+    -fx-background-color: linear-gradient(#c5c8c6, #282a2e);
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+}
+#bold-label{
+    -fx-font-weight: bold;
+}

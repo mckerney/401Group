@@ -1,5 +1,6 @@
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -20,6 +21,10 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javax.swing.JFileChooser;	
 import javax.swing.UIManager;
 import javafx.scene.paint.Color;
@@ -46,7 +51,10 @@ public class MP3Player extends Application {
         //setting up a group for the display
         //Then Sending it to a scene for the stage
         Group group = new Group();
-        primaryStage.setScene(new Scene(group));
+        Scene scene = new Scene(group);
+        scene.getStylesheets().add("MPStyle.css");
+   
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Group 3 MP3 and MP4 Player");                
         
         //The following call will start the media player off by adding a file URL
@@ -55,9 +63,9 @@ public class MP3Player extends Application {
         
         //this will create the control and send the instantiated mediaPlayer to it
         control = new MP3Player.Control(mediaPlayer);
-        control.setMinSize(600, 600);       //min size for formating
-        control.setPrefSize(600, 600);      //should help us with resizing based on media dimensions
-        control.setMaxSize(600, 600);
+        control.setMinSize(600, 560);       //min size for formating
+        control.setPrefSize(600, 560);      //should help us with resizing based on media dimensions
+        control.setMaxSize(600, 560);
         group.getChildren().add(control);
         
         
@@ -74,9 +82,9 @@ public class MP3Player extends Application {
         private Slider timeSlider;   //funtionality for time slider
         private Slider volSlider;    //funtionality for volume control
         private Label playTime;      //method for returing play time
-        private HBox controlBarBottom;     //HBox for laying elements out
+        //private HBox controlBarBottom;     //HBox for laying elements out
         private HBox controlBarTop;
-        //private GridPane controlGrid;
+        private GridPane controlGrid;
         private Pane mediaPane;      //Pane to house the mediaView
         private Stage newStage;
         
@@ -102,7 +110,7 @@ public class MP3Player extends Application {
          
         //These set sentinel values for use in resizing the controlGrid
         @Override protected double computeMinWidth(double height) {
-            return controlBarBottom.prefWidth(-1);
+            return controlGrid.prefWidth(-1);
         }
  
         @Override protected double computeMinHeight(double width) {
@@ -110,11 +118,11 @@ public class MP3Player extends Application {
         }
  
         @Override protected double computePrefWidth(double height) {
-            return Math.max(mp.getMedia().getWidth(), controlBarBottom.prefWidth(height));
+            return Math.max(mp.getMedia().getWidth(), controlGrid.prefWidth(height));
         }
  
         @Override protected double computePrefHeight(double width) {
-            return mp.getMedia().getHeight() + controlBarBottom.prefHeight(width);
+            return mp.getMedia().getHeight() + controlGrid.prefHeight(width);
         }
  
         @Override protected double computeMaxWidth(double height) { 
@@ -130,35 +138,38 @@ public class MP3Player extends Application {
         public Control(MediaPlayer mp){
             this.mp = mp; //sets the passed MediaPlayer instance to this one
             //will need to look into how to format the MediaPlayer object
+            setStyle("-fx-background-color: #373b41;");
             mediaView = new MediaView(mp); //whatever is in Media() when it's constructed gets passed here
             mediaPane = new Pane();
             mediaPane.getChildren().add(mediaView); // creating a pain and putting the media display on it
-            setCenter(mediaPane); // centering it in pane
-            // will likely need additional formating for the pane
-            /*
+            setCenter(mediaPane); // centering it in border pane
+        
+            
+            //for bottom control bar
             controlGrid = new GridPane();
             controlGrid.setPadding(new Insets(5, 5, 5, 5));
+            controlGrid.setHgap(10);
+            controlGrid.setPrefSize(600, 60);
             controlGrid.setAlignment(Pos.CENTER);
             BorderPane.setAlignment(controlGrid, Pos.CENTER);
-            */
-            
-            //creating the box for the controls and aligning it
-            controlBarBottom = new HBox(1);
-            controlBarBottom.setPadding(new Insets(10,10,10,10));
-            controlBarBottom.setAlignment(Pos.CENTER);
-            BorderPane.setAlignment(controlBarBottom, Pos.CENTER);
-            
+            setBottom(controlGrid);
+      
+            //for the Time slider
             controlBarTop = new HBox(1);
             controlBarTop.setPadding(new Insets(10,10,10,10));
             controlBarTop.setAlignment(Pos.CENTER);
             BorderPane.setAlignment(controlBarTop, Pos.CENTER);
+            setTop(controlBarTop);
             
-            DropShadow shadow = new DropShadow(); 
+            
             
             //Button setup
             Button btPlay = new Button();
             btPlay.setGraphic(ivPlay);
+            btPlay.setPrefSize(0, 0);
+            btPlay.setStyle("-fx-background-radius: 50");
             btPlay.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
                 public void handle(ActionEvent e) {
                     Status status = mediaPlayer.getStatus();
                     if (status == Status.UNKNOWN || status == Status.HALTED) {
@@ -178,8 +189,10 @@ public class MP3Player extends Application {
             });
 
             
+            DropShadow shadow = new DropShadow(); 
             Button btLoop = new Button("Loop");
             btLoop.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
                 public void handle(ActionEvent e) {
                     switch(lCount) {
                         case 0:
@@ -198,6 +211,7 @@ public class MP3Player extends Application {
             
             Button btRepeat = new Button("Repeat");
             btRepeat.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
                 public void handle(ActionEvent e) {
                     switch(rCount) {
                         case 0:
@@ -215,6 +229,7 @@ public class MP3Player extends Application {
             
             Button btFile = new Button("File");
             btFile.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
                 public void handle(ActionEvent e){
                     try {
                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -230,87 +245,117 @@ public class MP3Player extends Application {
                 }
             });
             
-            controlBarBottom.getChildren().add(btFile);
-            controlBarBottom.getChildren().add(btLoop);
-            controlBarBottom.getChildren().add(btPlay);
-            controlBarBottom.getChildren().add(btRepeat);
-            
-            /*
+       
             controlGrid.getChildren().add(btFile);
             controlGrid.getChildren().add(btLoop);
             controlGrid.getChildren().add(btPlay);
             controlGrid.getChildren().add(btRepeat);
             
-            controlGrid.setRowIndex(btFile, 1);
+            controlGrid.setRowIndex(btFile, 0);
             controlGrid.setColumnIndex(btFile, 0);
             
-            controlGrid.setRowIndex(btLoop, 1);
+            controlGrid.setRowIndex(btLoop, 0);
             controlGrid.setColumnIndex(btLoop, 2);
             
-            controlGrid.setRowIndex(btPlay, 1);
+            controlGrid.setRowIndex(btPlay, 0);
             controlGrid.setColumnIndex(btPlay, 3);
             
-            controlGrid.setRowIndex(btRepeat, 1);
+            controlGrid.setRowIndex(btRepeat, 0);
             controlGrid.setColumnIndex(btRepeat, 4);
-            */
-                    
+            
+            //Media player listeners
+            mp.setOnReady(new Runnable() {
+                @Override
+                public void run() {
+                    duration = mp.getMedia().getDuration();
+                    updateSliders();
+                }
+            });
             //Sliders
             
             //time slider
             Label tLabel =  new Label("Time");
+            tLabel.setId("bold-label"); //ID label that references the style sheet
             tLabel.setMinWidth(Control.USE_PREF_SIZE);
+            tLabel.setStyle("-fx-text-fill: #ffffff");
             timeSlider = new Slider();
-            timeSlider.minWidth(controlBarBottom.getWidth());
+            timeSlider.minWidth(30);
             timeSlider.maxWidth(Double.MAX_VALUE);
-            GridPane.setHgrow(timeSlider, Priority.ALWAYS);
-            // time slider listener for change in position
+            HBox.setHgrow(timeSlider, Priority.ALWAYS);
+            timeSlider.valueProperty().addListener(new InvalidationListener(){
+                @Override
+                public void invalidated(Observable ov) {
+                    if (timeSlider.isValueChanging()){
+                        if(duration != null){
+                            mp.seek(duration.multiply(timeSlider.getValue() / 100));
+                        }
+                        updateSliders();
+                    }
+                }
+                
+            });
+
         
             controlBarTop.getChildren().add(tLabel);
             controlBarTop.getChildren().add(timeSlider);
             BorderPane.setMargin(timeSlider, new Insets(12, 12, 12, 12));
-           
-            /*
-            controlGrid.getChildren().add(tLabel);
-            controlGrid.getChildren().add(timeSlider);
-            
-            controlGrid.setRowIndex(tLabel, 0);
-            controlGrid.setColumnIndex(tLabel, 0);
-            
-            controlGrid.setRowIndex(timeSlider, 0);
-            controlGrid.setColumnIndex(timeSlider, 1);
-            */
-            
+
             // volume slider
             Label volLabel = new Label("Vol");
+            volLabel.setId("bold-label");
             volLabel.setMinWidth(Control.USE_PREF_SIZE);
             volSlider = new Slider();
             volSlider.prefWidth(15);
             volSlider.minWidth(10);
             volSlider.maxWidth(Region.USE_PREF_SIZE);
-            // volume slider listener for change in poisition to modiy mp volume
+            volSlider.valueProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable ov){   
+                }  
+            });
+            volSlider.valueProperty().addListener(new ChangeListener<Number> () {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldvalue, Number newValue) {
+                    if(volSlider.isValueChanging()) {
+                        mp.setVolume(volSlider.getValue() / 100);
+                    }
+                }
+            });
             
             
-            controlBarBottom.getChildren().add(volLabel);
-            controlBarBottom.getChildren().add(volSlider);
-            
-            /*
+
             controlGrid.getChildren().add(volLabel);
             controlGrid.getChildren().add(volSlider);
             
-            controlGrid.setRowIndex(volLabel, 1);
+            controlGrid.setRowIndex(volLabel, 0);
             controlGrid.setColumnIndex(volLabel, 5);
             
-            controlGrid.setRowIndex(volSlider, 1);
+            controlGrid.setRowIndex(volSlider, 0);
             controlGrid.setColumnIndex(volSlider, 6);
-            */
-            setBottom(controlBarBottom);
-            setTop(controlBarTop);
-            //setBottom(controlGrid);
-            
+             
         }
-    
         
+        protected void updateSliders() {
+            if (timeSlider != null && volSlider != null && duration != null){
+                Platform.runLater(new Runnable() {
+                    public void run() {
+                        Duration currentRunTime = mp.getCurrentTime();
+                        timeSlider.setDisable(duration.isUnknown());
+                        System.out.println(duration.toString()); 
+                        System.out.println(currentRunTime.toString()); //making sure it's updating, don't know why the bar isn't updating
+                        if (duration.greaterThan(Duration.ZERO) && !timeSlider.isDisabled() && !timeSlider.isValueChanging()) {
+                            timeSlider.setValue(currentRunTime.divide(duration.toMillis()).toMillis() * 100);
+                        }
+                        if (!volSlider.isValueChanging()) {
+                            volSlider.setValue((int) Math.round(mp.getVolume() * 100));
+                        }    
+                    }
+                });
+            }
+        }   
+            
     }
+   
     
     public void start(Stage primaryStage){
         initialize(primaryStage); // the method for setting the stage
