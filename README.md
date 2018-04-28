@@ -1,4 +1,4 @@
-4/27 update \n
+4/27 update /n
 Got the sliders more or less working, the time slider doesn't update position while playing, so that needs some attention. Got a basic style sheet written in css loaded into the sourse folder as well as some direct style line code you'll see in the .java. Put the grid back in the bottom row and will work on formatting after a break. there's a ton of color and button customization we can do with css as well.\n
 
 update:2 \n
