@@ -1,4 +1,3 @@
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -42,7 +41,8 @@ public class MP3Player extends Application {
     //Setting up media player for use in control class
     private MediaPlayer mediaPlayer;
     private MP3Player.Control control;
-    private static String MEDIA_URL = "file:/C:/Users/Jim/OneDrive/Documents/NetBeansProjects/401GroupMediaPlayer/src/SampleVideo_720x480_5mb.mp4";
+    private static String MEDIA_URL = "file:/D:/CISP401/Group401Project/src/TestLoopVid.mp4";
+    private Group group = new Group();
     
     static int rCount = 0;
     static int lCount = 0;
@@ -50,7 +50,6 @@ public class MP3Player extends Application {
     private void initialize(Stage primaryStage){
         //setting up a group for the display
         //Then Sending it to a scene for the stage
-        Group group = new Group();
         Scene scene = new Scene(group);
         scene.getStylesheets().add("MPStyle.css");
    
@@ -183,11 +182,9 @@ public class MP3Player extends Application {
                      if (status == Status.PLAYING) {
                          mp.pause();
                          btPlay.setGraphic(ivPlay);
-                     }
-                    
+                     }                    
                 }
             });
-
             
             DropShadow shadow = new DropShadow(); 
             Button btLoop = new Button("Loop");
@@ -195,19 +192,27 @@ public class MP3Player extends Application {
                 @Override
                 public void handle(ActionEvent e) {
                     switch(lCount) {
-                        case 0:
-                            lCount = 1;
-                            btLoop.setEffect(shadow);
-                            break;
-                        case 1:
-                            lCount = 0;
-                            btLoop.setEffect(null);
-                            break;
+                      case 0:
+                        lCount = 1;
+                        btLoop.setEffect(shadow);
+                        mp.setOnEndOfMedia(new Runnable() {
+                            
+                          @Override
+                          public void run() {
+                            if (lCount == 1){
+                            mp.seek(Duration.ZERO);
+                            mp.play();
+                            }
+                          }
+                        });
+                        break;
+                      case 1:
+                        lCount = 0;
+                        btLoop.setEffect(null);
+                        break;
                     }
-                }
-            });
-            
-
+                  }
+                });           
             
             Button btRepeat = new Button("Repeat");
             btRepeat.setOnAction(new EventHandler<ActionEvent>() {
@@ -224,8 +229,7 @@ public class MP3Player extends Application {
                             break;
                     }
                 }
-            });
-         
+            });         
             
             Button btFile = new Button("File");
             btFile.setOnAction(new EventHandler<ActionEvent>() {
@@ -235,16 +239,26 @@ public class MP3Player extends Application {
                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
                     }catch (Exception ex) { System.err.println("Error"); }
                     
-                    JFileChooser chooser = new JFileChooser("C:\\Users\\Jim\\OneDrive\\Documents\\NetBeansProjects\\401GroupMediaPlayer\\src");
+                    JFileChooser chooser = new JFileChooser("D:\\CISP401\\Group401Project\\src");
                     
                     int returnVal = chooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
-                        MEDIA_URL = chooser.getSelectedFile().toString();
-                        System.out.println(MEDIA_URL);
+                        
+                        String FILE_APPEND = "file:/";
+                        String convertURL = chooser.getSelectedFile().toString();
+                        convertURL = convertURL.replace("\\", "/");        
+                        FILE_APPEND += convertURL;        
+                        MEDIA_URL = FILE_APPEND;
+                        
+                        mediaPlayer = new MediaPlayer(new Media(MEDIA_URL));
+                        control = new MP3Player.Control(mediaPlayer);
+                        control.setMinSize(600, 560);       //min size for formating
+                        control.setPrefSize(600, 560);      //should help us with resizing based on media dimensions
+                        control.setMaxSize(600, 560);
+                        group.getChildren().add(control);
                     }
                 }
             });
-            
        
             controlGrid.getChildren().add(btFile);
             controlGrid.getChildren().add(btLoop);
