@@ -1,0 +1,25 @@
+DropShadow shadow = new DropShadow(); 
+Button btLoop = new Button("Loop");
+btLoop.setOnAction(new EventHandler<ActionEvent>() {
+  @Override
+  public void handle(ActionEvent e) {
+    switch(lCount) {
+      case 0:
+        lCount = 1;
+        btLoop.setEffect(shadow);
+        mp.setOnEndOfMedia(new Runnable() {
+          @Override
+          public void run() {
+            if (lCount == 1){
+            mp.seek(Duration.ZERO);
+            }
+          }
+        });
+        break;
+      case 1:
+        lCount = 0;
+        btLoop.setEffect(null);
+        break;
+    }
+  }
+});
