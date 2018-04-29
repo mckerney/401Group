@@ -44,7 +44,7 @@ public class MP3Player extends Application {
     //Setting up media player for use in control class
     private MediaPlayer mediaPlayer;
     private MP3Player.Control control;
-    private static String MEDIA_URL = "file:/D:/CISP401/Group401Project/src/TestLoopVid.mp4";
+    private static String MEDIA_URL = "file:/C:/Users/Jim/OneDrive/Documents/NetBeansProjects/401GroupMediaPlayer/src/TestLoopVid.mp4";
     private Group group = new Group();
     
     static int rCount = 0;
@@ -55,38 +55,43 @@ public class MP3Player extends Application {
         //Then Sending it to a scene for the stage
         Scene scene = new Scene(group);
         scene.getStylesheets().add("MPStyle.css");
+       
    
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Group 3 MP3 and MP4 Player");                
+        primaryStage.setTitle("Group 3 MP3 and MP4 Player");
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
+
         
         //The following call will start the media player off by adding a file URL
-        //into the Media() call, this could be an onAction for the file button maybe
         mediaPlayer = new MediaPlayer(new Media(MEDIA_URL));
-        
+
+      
         //this will create the control and send the instantiated mediaPlayer to it
         control = new MP3Player.Control(mediaPlayer);
         control.setMinSize(600, 560);       //min size for formating
         control.setPrefSize(600, 560);      //should help us with resizing based on media dimensions
-        control.setMaxSize(600, 560);
+        control.setMaxSize(Double.MAX_VALUE,  Double.MAX_VALUE);
         group.getChildren().add(control);       
     }
+    
+    double playerHeight(){
+        return mediaPlayer.getMedia().getHeight()+ control.controlBarTop.getPrefHeight() + control.controlGrid.getPrefHeight();
+    }    
     
     //potential for methods that handle checks for button actions to trim down
     //on action code to make it look neater
     
     public class Control extends BorderPane{
         //add attributes
-        private MediaPlayer mp;      //Gives us the methods we need
-        private MediaView mediaView; //node for displaying media
+        public MediaPlayer mp;      //Gives us the methods we need
+        public MediaView mediaView; //node for displaying media
         private Duration duration;   //methods for returning duration values
         private Slider timeSlider;   //funtionality for time slider
         private Slider volSlider;    //funtionality for volume control
-        private Label playTime;      //method for returing play time
-        //private HBox controlBarBottom;     //HBox for laying elements out
-        private HBox controlBarTop;
-        private GridPane controlGrid;
+        private HBox controlBarTop;  //for the time slider
+        private GridPane controlGrid;//for the buttons on the bottom
         private Pane mediaPane;      //Pane to house the mediaView
-        private Stage newStage;
         
         //Setting button images for use in creation
         private Image btPlayImage = new Image(MP3Player.class.getResourceAsStream("Play_30x30.png"));
@@ -96,12 +101,15 @@ public class MP3Player extends Application {
         private Image btFileImage = new Image(MP3Player.class.getResourceAsStream("File_30x30.PNG"));
         ImageView ivFile = new ImageView(btFileImage);
         
+
+        
         //methods for laying out elements based on whether or not media is playing
         //we need to resize the placement dynamically based on media size
+
          @Override protected void layoutChildren() {
             if (mediaView != null && getBottom() != null) {
                 mediaView.setFitWidth(getWidth());
-                mediaView.setFitHeight(getHeight() - getBottom().prefHeight(-1));
+                mediaView.setFitHeight(getHeight() - getBottom().prefHeight(-1) - getTop().prefHeight(-1));
             }
             super.layoutChildren();
             if (mediaView != null && getCenter() != null) {
@@ -109,49 +117,23 @@ public class MP3Player extends Application {
                 mediaView.setTranslateY((((Pane)getCenter()).getHeight() - mediaView.prefHeight(-1)) / 2);
             }
         }
+
          
-        //These set sentinel values for use in resizing the controlGrid
-        @Override protected double computeMinWidth(double height) {
-            return controlGrid.prefWidth(-1);
-        }
- 
-        @Override protected double computeMinHeight(double width) {
-            return 200;
-        }
- 
-        @Override protected double computePrefWidth(double height) {
-            return Math.max(mp.getMedia().getWidth(), controlGrid.prefWidth(height));
-        }
- 
-        @Override protected double computePrefHeight(double width) {
-            return mp.getMedia().getHeight() + controlGrid.prefHeight(width);
-        }
- 
-        @Override protected double computeMaxWidth(double height) { 
-            return Double.MAX_VALUE; 
-        }
- 
-        @Override protected double computeMaxHeight(double width) { 
-            return Double.MAX_VALUE; 
-        }
- 
-        
         //constructor
         public Control(MediaPlayer mp){
             this.mp = mp; //sets the passed MediaPlayer instance to this one
-            //will need to look into how to format the MediaPlayer object
             setStyle("-fx-background-color: #373b41;");
             mediaView = new MediaView(mp); //whatever is in Media() when it's constructed gets passed here
             mediaPane = new Pane();
             mediaPane.getChildren().add(mediaView); // creating a pain and putting the media display on it
             setCenter(mediaPane); // centering it in border pane
-        
+
             
             //for bottom control bar
             controlGrid = new GridPane();
             controlGrid.setPadding(new Insets(5, 5, 5, 5));
             controlGrid.setHgap(10);
-            controlGrid.setPrefSize(600, 60);
+            controlGrid.setPrefSize(mp.getMedia().getWidth(), 50);
             controlGrid.setAlignment(Pos.CENTER);
             BorderPane.setAlignment(controlGrid, Pos.CENTER_LEFT);
             setBottom(controlGrid);
@@ -160,15 +142,15 @@ public class MP3Player extends Application {
             controlBarTop = new HBox(1);
             controlBarTop.setPadding(new Insets(10,10,10,10));
             controlBarTop.setAlignment(Pos.CENTER);
+            controlBarTop.setPrefSize(mp.getMedia().getWidth(), 30);
             BorderPane.setAlignment(controlBarTop, Pos.CENTER);
             setTop(controlBarTop);
-            
             
             
             //Button setup
             Button btPlay = new Button();
             btPlay.setGraphic(ivPlay);
-            btPlay.setPrefSize(0, 0);
+            btPlay.setPrefSize(30, 30);
             btPlay.setStyle("-fx-background-radius: 50");
             btPlay.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -247,26 +229,37 @@ public class MP3Player extends Application {
                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
                     }catch (Exception ex) { System.err.println("Error"); }
                     
-                    JFileChooser chooser = new JFileChooser("D:\\CISP401\\Group401Project\\src");
+                    JFileChooser chooser = new JFileChooser("C:\\Users\\Jim\\OneDrive\\Documents\\NetBeansProjects\\401GroupMediaPlayer\\src");
                     
                     int returnVal = chooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        
+                        setCenter(null);
+                        setBottom(null);
+                        setTop(null);
                         String FILE_APPEND = "file:/";
                         String convertURL = chooser.getSelectedFile().toString();
                         convertURL = convertURL.replace("\\", "/");        
                         FILE_APPEND += convertURL;        
                         MEDIA_URL = FILE_APPEND;
                         
+           
                         mediaPlayer = new MediaPlayer(new Media(MEDIA_URL));
                         control = new MP3Player.Control(mediaPlayer);
+                        
+                     
                         control.setMinSize(600, 560);       //min size for formating
                         control.setPrefSize(600, 560);      //should help us with resizing based on media dimensions
                         control.setMaxSize(600, 560);
+                       
                         group.getChildren().add(control);
+   
+
                     }
                 }
-            });            
-       
+            });
+            
+            //configuration for bottom control grid
             controlGrid.getChildren().add(btFile);
             controlGrid.getChildren().add(btLoop);
             controlGrid.getChildren().add(btPlay);
@@ -303,13 +296,6 @@ public class MP3Player extends Application {
             
             controlGrid.getColumnConstraints().addAll(col1,col2,col3,col4,col5,col6,col7);
             
-            mp.currentTimeProperty().addListener(new ChangeListener<Duration>() {
-                @Override
-                public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
-                    updateSliders();
-                }
-            });
-            
             //Media player listeners
             mp.setOnReady(new Runnable() {
                 @Override
@@ -318,6 +304,16 @@ public class MP3Player extends Application {
                     updateSliders();
                 }
             });
+                   
+            mp.currentTimeProperty().addListener(new ChangeListener<Duration>() {
+                @Override
+                public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
+                    updateSliders();
+                }
+            });
+            
+
+           
             //Sliders
             
             //time slider
@@ -374,7 +370,15 @@ public class MP3Player extends Application {
             controlGrid.setColumnIndex(volLabel, 5);
             
             controlGrid.setRowIndex(volSlider, 0);
-            controlGrid.setColumnIndex(volSlider, 6);             
+            controlGrid.setColumnIndex(volSlider, 6);
+         
+            
+            Label minus = new Label("-     +");
+            minus.setStyle("-fx-text-fill: #ffffff");
+            controlGrid.setConstraints(minus, 1, 5);
+            Label plus = new Label("+");
+            plus.setStyle("-fx-text-fill: #ffffff");
+            controlGrid.setConstraints(plus, 6, 1);
         }
         
         protected void updateSliders() {
@@ -383,11 +387,8 @@ public class MP3Player extends Application {
                     public void run() {
                         Duration currentRunTime = mp.getCurrentTime();
                         timeSlider.setDisable(duration.isUnknown());
-                        System.out.println(duration.toString()); 
-                        System.out.println(currentRunTime.toString()); //making sure it's updating, don't know why the bar isn't updating
                         if (duration.greaterThan(Duration.ZERO) && !timeSlider.isDisabled() && !timeSlider.isValueChanging()) {
                             timeSlider.setValue(currentRunTime.divide(duration.toMillis()).toMillis() * 100);
-                            System.out.println("Current Slider Value: " + timeSlider.getValue());
                         }
                         if (!volSlider.isValueChanging()) {
                             volSlider.setValue((int) Math.round(mp.getVolume() * 100));
@@ -403,6 +404,7 @@ public class MP3Player extends Application {
         primaryStage.show();      // Showing the stage
         
     }
+
     public static void main(String[] args){
         launch(args);
     }
