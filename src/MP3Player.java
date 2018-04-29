@@ -303,6 +303,13 @@ public class MP3Player extends Application {
             
             controlGrid.getColumnConstraints().addAll(col1,col2,col3,col4,col5,col6,col7);
             
+            mp.currentTimeProperty().addListener(new ChangeListener<Duration>() {
+                @Override
+                public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
+                    updateSliders();
+                }
+            });
+            
             //Media player listeners
             mp.setOnReady(new Runnable() {
                 @Override
@@ -331,8 +338,7 @@ public class MP3Player extends Application {
                         }
                         updateSliders();
                     }
-                }
-                
+                }                
             });
             
             controlBarTop.getChildren().add(tLabel);
@@ -381,6 +387,7 @@ public class MP3Player extends Application {
                         System.out.println(currentRunTime.toString()); //making sure it's updating, don't know why the bar isn't updating
                         if (duration.greaterThan(Duration.ZERO) && !timeSlider.isDisabled() && !timeSlider.isValueChanging()) {
                             timeSlider.setValue(currentRunTime.divide(duration.toMillis()).toMillis() * 100);
+                            System.out.println("Current Slider Value: " + timeSlider.getValue());
                         }
                         if (!volSlider.isValueChanging()) {
                             volSlider.setValue((int) Math.round(mp.getVolume() * 100));
