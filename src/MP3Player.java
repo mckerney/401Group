@@ -44,7 +44,7 @@ public class MP3Player extends Application {
     //Setting up media player for use in control class
     private MediaPlayer mediaPlayer;
     private MP3Player.Control control;
-    private static String MEDIA_URL = "file:/C:/Users/Jim/OneDrive/Documents/NetBeansProjects/401GroupMediaPlayer/src/TestLoopVid.mp4";
+    private static String MEDIA_URL = "file:/D:/CISP401/Group401Project/src/TestLoopVid.mp4";
     private Group group = new Group();
     
     static int rCount = 0;
@@ -100,8 +100,10 @@ public class MP3Player extends Application {
         ImageView ivPause = new ImageView(btPauseImage);
         private Image btFileImage = new Image(MP3Player.class.getResourceAsStream("File_30x30.PNG"));
         ImageView ivFile = new ImageView(btFileImage);
-        
-
+        private Image btGoBackImage = new Image(MP3Player.class.getResourceAsStream("GoBack_30x30.png"));
+        ImageView ivGoBack = new ImageView(btGoBackImage);
+        private Image btLoopImage = new Image(MP3Player.class.getResourceAsStream("Loop_30x30.png"));
+        ImageView ivLoop = new ImageView(btLoopImage);
         
         //methods for laying out elements based on whether or not media is playing
         //we need to resize the placement dynamically based on media size
@@ -167,8 +169,7 @@ public class MP3Player extends Application {
                      if (status == Status.PLAYING) {
                          mp.pause();
                          btPlay.setGraphic(ivPlay);
-                     }
-                    
+                     }                    
                 }
             });
             
@@ -177,7 +178,8 @@ public class MP3Player extends Application {
             shadow.setChoke(1.0);
             shadow.setRadius(3.0);
             
-            Button btLoop = new Button("Loop");
+            Button btLoop = new Button();
+            btLoop.setGraphic(ivLoop);
             btLoop.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e) {
@@ -201,24 +203,19 @@ public class MP3Player extends Application {
                             break;
                     }
                 }
-            });          
+            }); 
             
-            Button btRepeat = new Button("Repeat");
-            btRepeat.setOnAction(new EventHandler<ActionEvent>() {
+            Button btGoBack = new Button();            
+            btGoBack.setGraphic(ivGoBack);
+            btGoBack.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e) {
-                    switch(rCount) {
-                        case 0:
-                            rCount = 1;
-                            btRepeat.setEffect(shadow);
-                            break;
-                        case 1:
-                            rCount = 0;
-                            btRepeat.setEffect(null);
-                            break;
-                    }
-                }
-            });         
+                    mp.seek(Duration.ZERO);
+                    updateSliders();
+                    System.out.println(btLoop.getWidth());
+                    System.out.println(btLoop.getHeight());
+                }                
+            });            
             
             Button btFile = new Button();
             btFile.setGraphic(ivFile);
@@ -229,7 +226,7 @@ public class MP3Player extends Application {
                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
                     }catch (Exception ex) { System.err.println("Error"); }
                     
-                    JFileChooser chooser = new JFileChooser("C:\\Users\\Jim\\OneDrive\\Documents\\NetBeansProjects\\401GroupMediaPlayer\\src");
+                    JFileChooser chooser = new JFileChooser("D:\\CISP401\\Group401Project\\src");
                     
                     int returnVal = chooser.showOpenDialog(null);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -253,8 +250,6 @@ public class MP3Player extends Application {
                         control.setMaxSize(600, 560);
                        
                         group.getChildren().add(control);
-   
-
                     }
                 }
             });
@@ -263,20 +258,20 @@ public class MP3Player extends Application {
             controlGrid.getChildren().add(btFile);
             controlGrid.getChildren().add(btLoop);
             controlGrid.getChildren().add(btPlay);
-            controlGrid.getChildren().add(btRepeat);
+            controlGrid.getChildren().add(btGoBack);
             
             controlGrid.setRowIndex(btFile, 0);
             controlGrid.setColumnIndex(btFile, 0);
            
           
-            controlGrid.setRowIndex(btLoop, 0);
-            controlGrid.setColumnIndex(btLoop, 2);
+            controlGrid.setRowIndex(btGoBack, 0);
+            controlGrid.setColumnIndex(btGoBack, 2);
             
             controlGrid.setRowIndex(btPlay, 0);
             controlGrid.setColumnIndex(btPlay, 3);
             
-            controlGrid.setRowIndex(btRepeat, 0);
-            controlGrid.setColumnIndex(btRepeat, 4);
+            controlGrid.setRowIndex(btLoop, 0);
+            controlGrid.setColumnIndex(btLoop, 4);
             
             ColumnConstraints col1 = new ColumnConstraints();
             ColumnConstraints col2 = new ColumnConstraints();
